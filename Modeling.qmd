@@ -233,7 +233,7 @@ Now that we have every model fit, lets compare the best models from each on the 
 # Use Test data
 probs_lr <- predict(logmodel3, newdata = test_df, type = "prob")[, "Yes"]
 probs_tree <- predict(tree3, newdata = test_df, type = "prob")[, "Yes"]
-probs_rf <- predict(tree2, newdata = test_df, type = "prob")[, "Yes"]
+probs_rf <- predict(rf3, newdata = test_df, type = "prob")[, "Yes"]
 
 # Calculate logLoss
 actual <- ifelse(test_df$Diabetes_binary == "Yes", 1, 0)
@@ -250,4 +250,4 @@ finalresults <- data.frame(
 print(finalresults)
 ```
 
-
+Our overall best model is our 3rd logistics regression model. It just barely out-performed the classification tree model. The random forest model seems to be misfit in some way, so it was not even close to the other two models.

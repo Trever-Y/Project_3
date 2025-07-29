@@ -370,7 +370,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use Test data</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>probs_lr <span class="ot">&lt;-</span> <span class="fu">predict</span>(logmodel3, <span class="at">newdata =</span> test_df, <span class="at">type =</span> <span class="st">"prob"</span>)[, <span class="st">"Yes"</span>]</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>probs_tree <span class="ot">&lt;-</span> <span class="fu">predict</span>(tree3, <span class="at">newdata =</span> test_df, <span class="at">type =</span> <span class="st">"prob"</span>)[, <span class="st">"Yes"</span>]</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>probs_rf <span class="ot">&lt;-</span> <span class="fu">predict</span>(tree2, <span class="at">newdata =</span> test_df, <span class="at">type =</span> <span class="st">"prob"</span>)[, <span class="st">"Yes"</span>]</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>probs_rf <span class="ot">&lt;-</span> <span class="fu">predict</span>(rf3, <span class="at">newdata =</span> test_df, <span class="at">type =</span> <span class="st">"prob"</span>)[, <span class="st">"Yes"</span>]</span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate logLoss</span></span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>actual <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(test_df<span class="sc">$</span>Diabetes_binary <span class="sc">==</span> <span class="st">"Yes"</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
@@ -389,9 +389,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>                Model   LogLoss
 1 Logistic Regression 0.3542397
 2 Classification Tree 0.3551220
-3       Random Forest 0.3828259</code></pre>
+3       Random Forest 4.5110943</code></pre>
 </div>
 </div>
+<p>Our overall best model is our 3rd logistics regression model. It just barely out-performed the classification tree model. The random forest model seems to be misfit in some way, so it was not even close to the other two models.</p>
 
 
 </section>
