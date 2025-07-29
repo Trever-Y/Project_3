@@ -5,23 +5,85 @@ format: html
 editor: visual
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+### Data
 
 ```{r}
-1 + 1
+# Load packages
+library(ggplot2)
+library(dplyr)
 ```
 
-You can add options to executable code like this
 
 ```{r}
-#| echo: false
-2 * 2
+# Read in the data
+diabetes_data <- read.csv("diabetes_binary_health_indicators_BRFSS2015.csv")
+
+# Pick response and variables I will investigate
+diabetes_data <- diabetes_data[, c("Diabetes_binary", "BMI", "PhysActivity", "HighBP")] %>%
+    mutate(
+    Diabetes_binary = factor(Diabetes_binary, levels = c(0, 1), labels = c("No Diabetes", "Diabetes")),
+    PhysActivity = factor(PhysActivity, levels = c(0, 1), labels = c("No", "Yes")),
+    HighBP = factor(HighBP, levels = c(0, 1), labels = c("No", "Yes"))
+  )
+head(selected_data)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+Our response variable will be *Diabetes_binary* and the 3 selected predictors are: *BMI*, *PhysActivity*, and *HighBP.* Studies have shown strong links between these variables and diabetes outcomes. For example, [this article by Mokdad et al. (2005)](https://diabetesjournals.org/care/article/28/7/1599/27992/Obesity-Inactivity-and-the-Prevalence-of-Diabetes) published in *Diabetes Care* highlights how **obesity and inactivity** contribute significantly to the prevalence of diabetes.This article also mentions blood pressure and BMI.
+
+
+### Plots
+
+```{r}
+# Histogram of BMI
+ggplot(diabetes_data, aes(x = BMI)) +
+  geom_histogram(binwidth = 2, fill = "steelblue") +
+  labs(title = "Distribution of BMI")
+```
+
+```{r}
+# Bar plot of PhysActivity
+ggplot(diabetes_data, aes(x = PhysActivity)) +
+  geom_bar(fill = "darkgreen") +
+  labs(title = "Physical Activity Distribution", x = "Physical Activity in the Last 30 Days")
+```
+
+
+
+```{r}
+# Bar plot of HighBP
+ggplot(diabetes_data, aes(x = HighBP)) +
+  geom_bar(fill = "firebrick") +
+  labs(title = "High Blood Pressure Distribution", x = "High Blood Pressure", y = "Count")
+```
+
+
+```{r}
+# BMI vs. Diabetes
+ggplot(diabetes_data, aes(x = Diabetes_binary, y = BMI)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(title = "BMI by Diabetes Status", x = "Diabetes Status", y = "BMI")
+```
+
+```{r}
+# PhysActivity vs. Diabetes
+ggplot(diabetes_data, aes(x = PhysActivity, fill = Diabetes_binary)) +
+  geom_bar(position = "fill") +
+  labs(title = "Diabetes Rate by Physical Activity", x = "Physical Activity", y = "Proportion", fill = "Diabetes")
+```
+
+
+
+```{r}
+# HighBP vs. Diabetes
+ggplot(diabetes_data, aes(x = HighBP, fill = Diabetes_binary)) +
+  geom_bar(position = "fill") +
+  labs(title = "Diabetes Rate by High Blood Pressure", x = "High Blood Pressure", y = "Proportion", fill = "Diabetes")
+```
+
+
+
+
+
+
+
+[Click here for the Modeling Page](Modeling.html)
