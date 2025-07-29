@@ -5,6 +5,26 @@ format: html
 editor: visual
 ---
 
+### Introduction
+
+This project uses the [Diabetes Health Indicators](https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset?resource=download&select=diabetes_binary_health_indicators_BRFSS2015.csv), which includes over 250,000 observations from the 2015 Behavioral Risk Factor Surveillance System (BRFSS). Each observation represents an individual and includes a variety of health-related variables:
+
+- *Diabetes_binary*: Indicates whether the individual has been diagnosed with diabetes (our response variable)
+
+- *BMI*: Body Mass Index
+
+- *PhysActivity*: Whether the individual has engaged in physical activity in the last 30 days (not including job)
+
+- *HighBP*: Whether the individual has high blood pressure
+
+- There are 18 more variables, but they will be excluded from this project for simplicity.
+
+The goal of this exploratory data analysis (EDA) is to better understand the distribution and relationships between key health indicators and diabetes status. This includes examining individual variable distributions and how each potential predictor relates to the outcome.
+
+Our ultimate objective is to develop a model that can reasonably predict whether an individual is likely to have diabetes based on these health indicators. By identifying meaningful patterns and associations during EDA, we aim to inform our modeling decisions and improve predictive accuracy. We will create 3 different types of models and select the best model from each model type. After that, we will compare these models and pick the overall best model.
+
+Our response variable will be *Diabetes_binary* and the 3 selected predictors are: *BMI*, *PhysActivity*, and *HighBP.* Studies have shown strong links between these variables and diabetes outcomes. For example, [this article by Mokdad et al. (2005)](https://diabetesjournals.org/care/article/28/7/1599/27992/Obesity-Inactivity-and-the-Prevalence-of-Diabetes) published in *Diabetes Care* highlights how **obesity and inactivity** contribute significantly to the prevalence of diabetes.This article also mentions blood pressure and BMI.
+
 ### Data
 
 ```{r}
@@ -13,12 +33,11 @@ library(ggplot2)
 library(dplyr)
 ```
 
-
 ```{r}
 # Read in the data
 diabetes_data <- read.csv("diabetes_binary_health_indicators_BRFSS2015.csv")
 
-# Pick response and variables I will investigate
+# Pick response and variables to be investigated and mutate them appropriately
 diabetes_data <- diabetes_data[, c("Diabetes_binary", "BMI", "PhysActivity", "HighBP")] %>%
     mutate(
     Diabetes_binary = factor(Diabetes_binary, levels = c(0, 1), labels = c("No Diabetes", "Diabetes")),
@@ -26,12 +45,14 @@ diabetes_data <- diabetes_data[, c("Diabetes_binary", "BMI", "PhysActivity", "Hi
     HighBP = factor(HighBP, levels = c(0, 1), labels = c("No", "Yes"))
   )
 head(diabetes_data)
+summary(diabetes_data)
+
+#check for missing values
+any(is.na(diabetes_data))
 ```
+Excellent! There are no missing values and our variable counts/classifications make sense!
 
-Our response variable will be *Diabetes_binary* and the 3 selected predictors are: *BMI*, *PhysActivity*, and *HighBP.* Studies have shown strong links between these variables and diabetes outcomes. For example, [this article by Mokdad et al. (2005)](https://diabetesjournals.org/care/article/28/7/1599/27992/Obesity-Inactivity-and-the-Prevalence-of-Diabetes) published in *Diabetes Care* highlights how **obesity and inactivity** contribute significantly to the prevalence of diabetes.This article also mentions blood pressure and BMI.
-
-
-### Plots
+### Summarizations
 
 ```{r}
 # Histogram of BMI
@@ -47,15 +68,12 @@ ggplot(diabetes_data, aes(x = PhysActivity)) +
   labs(title = "Physical Activity Distribution", x = "Physical Activity in the Last 30 Days")
 ```
 
-
-
 ```{r}
 # Bar plot of HighBP
 ggplot(diabetes_data, aes(x = HighBP)) +
   geom_bar(fill = "firebrick") +
   labs(title = "High Blood Pressure Distribution", x = "High Blood Pressure", y = "Count")
 ```
-
 
 ```{r}
 # BMI vs. Diabetes
@@ -71,19 +89,11 @@ ggplot(diabetes_data, aes(x = PhysActivity, fill = Diabetes_binary)) +
   labs(title = "Diabetes Rate by Physical Activity", x = "Physical Activity", y = "Proportion", fill = "Diabetes")
 ```
 
-
-
 ```{r}
 # HighBP vs. Diabetes
 ggplot(diabetes_data, aes(x = HighBP, fill = Diabetes_binary)) +
   geom_bar(position = "fill") +
   labs(title = "Diabetes Rate by High Blood Pressure", x = "High Blood Pressure", y = "Proportion", fill = "Diabetes")
 ```
-
-
-
-
-
-
 
 [Click here for the Modeling Page](Modeling.html)
