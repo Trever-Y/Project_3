@@ -4,7 +4,7 @@
     "href": "Modeling.html",
     "title": "Modeling",
     "section": "",
-    "text": "Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see https://quarto.org."
+    "text": "Introduction\n\n\nLogistic Regression Models\n\n\nClassification Tree\n\n\nRandom Forest\n\n\nFinal Model Selection"
   },
   {
     "objectID": "Modeling.html#quarto",
