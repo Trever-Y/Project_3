@@ -9,15 +9,15 @@ editor: visual
 
 This project uses the [Diabetes Health Indicators](https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset?resource=download&select=diabetes_binary_health_indicators_BRFSS2015.csv), which includes over 250,000 observations from the 2015 Behavioral Risk Factor Surveillance System (BRFSS). Each observation represents an individual and includes a variety of health-related variables:
 
-- *Diabetes_binary*: Indicates whether the individual has been diagnosed with diabetes (our response variable)
+-   *Diabetes_binary*: Indicates whether the individual has been diagnosed with diabetes (our response variable)
 
-- *BMI*: Body Mass Index
+-   *BMI*: Body Mass Index
 
-- *PhysActivity*: Whether the individual has engaged in physical activity in the last 30 days (not including job)
+-   *PhysActivity*: Whether the individual has engaged in physical activity in the last 30 days (not including job)
 
-- *HighBP*: Whether the individual has high blood pressure
+-   *HighBP*: Whether the individual has high blood pressure
 
-- There are 18 more variables, but they will be excluded from this project for simplicity.
+-   There are 18 more variables, but they will be excluded from this project for simplicity.
 
 The goal of this exploratory data analysis (EDA) is to better understand the distribution and relationships between key health indicators and diabetes status. This includes examining individual variable distributions and how each potential predictor relates to the outcome.
 
@@ -27,10 +27,11 @@ Our response variable will be *Diabetes_binary* and the 3 selected predictors ar
 
 ### Data
 
-```{r}
+```{r setup, message=FALSE, warning=FALSE}
 # Load packages
 library(ggplot2)
 library(dplyr)
+library(scales)
 ```
 
 ```{r}
@@ -45,14 +46,29 @@ diabetes_data <- diabetes_data[, c("Diabetes_binary", "BMI", "PhysActivity", "Hi
     HighBP = factor(HighBP, levels = c(0, 1), labels = c("No", "Yes"))
   )
 head(diabetes_data)
-summary(diabetes_data)
+
 
 #check for missing values
 any(is.na(diabetes_data))
 ```
-Excellent! There are no missing values and our variable counts/classifications make sense!
+
+Excellent! There are no missing values and our variable classifications make sense!
 
 ### Summarizations
+
+First, let's just produce some basic statistics about each variable.
+
+```{r}
+summary(diabetes_data)
+```
+
+We can see that around 15% of the individuals in this study have diabetes. This should be a sufficient proportion to allow for meaningful predictions.
+
+For BMI, our mean is 1 point higher than our median, suggesting a slight right skew. We will look into this further. Considering the Normal range for BMI is 18.5-25, our mean is above normal (28.38) and our 1st quartile is barely within normal at 24. This suggest that our population is largely over weight, which aligns with national statistics from the US.
+
+Physical activity is consistent with expectations: about one-fourth of participants reported no physical activity in the last 30 days. High blood pressure is prevalent, with over 40% of the sample having it.
+
+Now, let's look at the distribution of BMI.
 
 ```{r}
 # Histogram of BMI
@@ -60,40 +76,97 @@ ggplot(diabetes_data, aes(x = BMI)) +
   geom_histogram(binwidth = 2, fill = "steelblue") +
   labs(title = "Distribution of BMI")
 ```
+We can now confirm that our BMI data has a right skew. While extreme BMI values (above 50) do exist, they are relatively rare. This supports the idea that the dataset is broadly representative but includes some outliers.
 
+Now, let's plot physical activity.
 ```{r}
 # Bar plot of PhysActivity
 ggplot(diabetes_data, aes(x = PhysActivity)) +
   geom_bar(fill = "darkgreen") +
   labs(title = "Physical Activity Distribution", x = "Physical Activity in the Last 30 Days")
 ```
+The physical activity bar plot shows that roughly 75% of the population is active. 
 
+Let's briefly plot and look at high blood pressure.
 ```{r}
-# Bar plot of HighBP
-ggplot(diabetes_data, aes(x = HighBP)) +
-  geom_bar(fill = "firebrick") +
-  labs(title = "High Blood Pressure Distribution", x = "High Blood Pressure", y = "Count")
+ggplot(diabetes_data, aes(x = HighBP, fill = HighBP)) +
+  geom_bar() +
+  labs(
+    title = "High Blood Pressure Distribution",
+    x = "High Blood Pressure",
+    y = "Count"
+  ) +
+  scale_fill_manual(values = c("No" = "steelblue", "Yes" = "firebrick")) +
+  theme_minimal()
 ```
+Now we have a visual representation of high blood pressure counts. Again, we can see that just under half of our sample has high blood pressure.
 
+Now let's make a boxplot for BMI and diabetes.
 ```{r}
 # BMI vs. Diabetes
 ggplot(diabetes_data, aes(x = Diabetes_binary, y = BMI)) +
   geom_boxplot(fill = "lightblue") +
   labs(title = "BMI by Diabetes Status", x = "Diabetes Status", y = "BMI")
 ```
+We can see that the diabetes quartiles have slightly higher BMI. Maybe we can see this relationship better with a different plot.
 
+Let's bin BMI as typical ranges: Underweight (less than 18.5), Normal (18.5-25), Overweight (25-3), Obese (30+). I added counts for each bin since we know that our BMI data is not evenly distributed into each bin.
+
+```{r}
+# Create bins for classification ranges
+diabetes_data <- diabetes_data %>%
+  mutate(BMI_category = case_when(
+    BMI < 18.5 ~ "Underweight",
+    BMI >= 18.5 & BMI < 25 ~ "Normal",
+    BMI >= 25 & BMI < 30 ~ "Overweight",
+    BMI >= 30 ~ "Obese"
+  )) %>%
+  mutate(BMI_category = factor(BMI_category, levels = c("Underweight", "Normal", "Overweight", "Obese")))
+
+# Get total counts per BMI category
+bmi_counts <- diabetes_data %>%
+  count(BMI_category) %>%
+  mutate(label_y = 1.05)
+
+# Plot with proportion bars and count labels
+ggplot(diabetes_data, aes(x = BMI_category, fill = Diabetes_binary)) +
+  geom_bar(position = "fill") +
+  geom_text(
+    data = bmi_counts,
+    aes(x = BMI_category, y = label_y, label = paste0("n = ", n)),
+    inherit.aes = FALSE
+  ) +
+  scale_y_continuous(labels = percent_format(), limits = c(0, 1.1)) +
+  labs(
+    title = "Diabetes Rate by BMI Category",
+    x = "BMI Category",
+    y = "Proportion",
+    fill = "Diabetes"
+  ) +
+  theme_minimal()
+```
+
+In the above plot we can now see a clear increase in proportion with Diabetes for Overweight individuals and an even greater increase for Obese individuals. This should be a strong predictor in our models.
+
+
+Let's look at physical activity in relation to diabetes to see if it might also be a strong predictor.
 ```{r}
 # PhysActivity vs. Diabetes
 ggplot(diabetes_data, aes(x = PhysActivity, fill = Diabetes_binary)) +
   geom_bar(position = "fill") +
   labs(title = "Diabetes Rate by Physical Activity", x = "Physical Activity", y = "Proportion", fill = "Diabetes")
 ```
+We observe a noticeably higher proportion of individuals without recent physical activity who have diabetes, compared to those who are physically active. Since the proportion of diabetes cases differs between the two groups, this suggests that physical activity may have predictive value in determining diabetes status.
 
+Now let's look at the relationship between diabetes and high blood pressure.
 ```{r}
 # HighBP vs. Diabetes
 ggplot(diabetes_data, aes(x = HighBP, fill = Diabetes_binary)) +
   geom_bar(position = "fill") +
   labs(title = "Diabetes Rate by High Blood Pressure", x = "High Blood Pressure", y = "Proportion", fill = "Diabetes")
 ```
+These proportions are extremely different, suggesting high blood pressure may be a strong predictor for diabetes.
 
+
+Now, let's move on to modeling to see just how strong of predictors our variables are for diabetes.
 [Click here for the Modeling Page](Modeling.html)
