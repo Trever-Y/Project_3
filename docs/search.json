@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "Modeling.html",
+    "href": "Modeling.html",
+    "title": "Modeling",
+    "section": "",
+    "text": "Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see https://quarto.org."
+  },
+  {
+    "objectID": "Modeling.html#quarto",
+    "href": "Modeling.html#quarto",
+    "title": "Modeling",
+    "section": "",
+    "text": "Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see https://quarto.org."
+  },
+  {
+    "objectID": "Modeling.html#running-code",
+    "href": "Modeling.html#running-code",
+    "title": "Modeling",
+    "section": "Running Code",
+    "text": "Running Code\nWhen you click the Render button a document will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n1 + 1\n\n[1] 2\n\n\nYou can add options to executable code like this\n\n\n[1] 4\n\n\nThe echo: false option disables the printing of code (only output is displayed)."
+  },
+  {
+    "objectID": "EDA.html",
+    "href": "EDA.html",
+    "title": "EDA",
+    "section": "",
+    "text": "Data\n\n# Load packages\nlibrary(ggplot2)\nlibrary(dplyr)\n\n\nAttaching package: 'dplyr'\n\n\nThe following objects are masked from 'package:stats':\n\n    filter, lag\n\n\nThe following objects are masked from 'package:base':\n\n    intersect, setdiff, setequal, union\n\n\n\n# Read in the data\ndiabetes_data &lt;- read.csv(\"diabetes_binary_health_indicators_BRFSS2015.csv\")\n\n# Pick response and variables I will investigate\ndiabetes_data &lt;- diabetes_data[, c(\"Diabetes_binary\", \"BMI\", \"PhysActivity\", \"HighBP\")] %&gt;%\n    mutate(\n    Diabetes_binary = factor(Diabetes_binary, levels = c(0, 1), labels = c(\"No Diabetes\", \"Diabetes\")),\n    PhysActivity = factor(PhysActivity, levels = c(0, 1), labels = c(\"No\", \"Yes\")),\n    HighBP = factor(HighBP, levels = c(0, 1), labels = c(\"No\", \"Yes\"))\n  )\nhead(diabetes_data)\n\n  Diabetes_binary BMI PhysActivity HighBP\n1     No Diabetes  40           No    Yes\n2     No Diabetes  25          Yes     No\n3     No Diabetes  28           No    Yes\n4     No Diabetes  27          Yes    Yes\n5     No Diabetes  24          Yes    Yes\n6     No Diabetes  25          Yes    Yes\n\n\nOur response variable will be Diabetes_binary and the 3 selected predictors are: BMI, PhysActivity, and HighBP. Studies have shown strong links between these variables and diabetes outcomes. For example, this article by Mokdad et al. (2005) published in Diabetes Care highlights how obesity and inactivity contribute significantly to the prevalence of diabetes.This article also mentions blood pressure and BMI.\n\n\nPlots\n\n# Histogram of BMI\nggplot(diabetes_data, aes(x = BMI)) +\n  geom_histogram(binwidth = 2, fill = \"steelblue\") +\n  labs(title = \"Distribution of BMI\")\n\n\n\n\n\n\n\n\n\n# Bar plot of PhysActivity\nggplot(diabetes_data, aes(x = PhysActivity)) +\n  geom_bar(fill = \"darkgreen\") +\n  labs(title = \"Physical Activity Distribution\", x = \"Physical Activity in the Last 30 Days\")\n\n\n\n\n\n\n\n\n\n# Bar plot of HighBP\nggplot(diabetes_data, aes(x = HighBP)) +\n  geom_bar(fill = \"firebrick\") +\n  labs(title = \"High Blood Pressure Distribution\", x = \"High Blood Pressure\", y = \"Count\")\n\n\n\n\n\n\n\n\n\n# BMI vs. Diabetes\nggplot(diabetes_data, aes(x = Diabetes_binary, y = BMI)) +\n  geom_boxplot(fill = \"lightblue\") +\n  labs(title = \"BMI by Diabetes Status\", x = \"Diabetes Status\", y = \"BMI\")\n\n\n\n\n\n\n\n\n\n# PhysActivity vs. Diabetes\nggplot(diabetes_data, aes(x = PhysActivity, fill = Diabetes_binary)) +\n  geom_bar(position = \"fill\") +\n  labs(title = \"Diabetes Rate by Physical Activity\", x = \"Physical Activity\", y = \"Proportion\", fill = \"Diabetes\")\n\n\n\n\n\n\n\n\n\n# HighBP vs. Diabetes\nggplot(diabetes_data, aes(x = HighBP, fill = Diabetes_binary)) +\n  geom_bar(position = \"fill\") +\n  labs(title = \"Diabetes Rate by High Blood Pressure\", x = \"High Blood Pressure\", y = \"Proportion\", fill = \"Diabetes\")\n\n\n\n\n\n\n\n\nClick here for the Modeling Page"
+  }
+]
