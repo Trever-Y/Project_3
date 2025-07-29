@@ -23,7 +23,7 @@ The goal of this exploratory data analysis (EDA) is to better understand the dis
 
 Our ultimate objective is to develop a model that can reasonably predict whether an individual is likely to have diabetes based on these health indicators. By identifying meaningful patterns and associations during EDA, we aim to inform our modeling decisions and improve predictive accuracy. We will create 3 different types of models and select the best model from each model type. After that, we will compare these models and pick the overall best model.
 
-Our response variable will be *Diabetes_binary* and the 3 selected predictors are: *BMI*, *PhysActivity*, and *HighBP.* Studies have shown strong links between these variables and diabetes outcomes. For example, [this article by Mokdad et al. (2005)](https://diabetesjournals.org/care/article/28/7/1599/27992/Obesity-Inactivity-and-the-Prevalence-of-Diabetes) published in *Diabetes Care* highlights how **obesity and inactivity** contribute significantly to the prevalence of diabetes.This article also mentions blood pressure and BMI.
+Our response variable will be *Diabetes_binary* and the 3 selected predictors are: *BMI*, *PhysActivity*, and *HighBP.* Studies have shown strong links between these variables and diabetes outcomes. For example, [this article by Mokdad et al. (2005)](https://diabetesjournals.org/care/article/28/7/1599/27992/Obesity-Inactivity-and-the-Prevalence-of-Diabetes) published in *Diabetes Care* highlights how **obesity and inactivity** contribute significantly to the prevalence of diabetes. [This](https://www.hopkinsmedicine.org/health/conditions-and-diseases/diabetes/diabetes-and-high-blood-pressure) article also mentions that blood pressure is connected to diabetes.
 
 ### Data
 
