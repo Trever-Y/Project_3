@@ -7,26 +7,247 @@ editor: visual
 
 ### Introduction
 
+Based on our EDA, we can expect to have some reasonably strong predictors selected for our models. We will split our data into 70% training and 30% testing data then create 3 different types of models: 
 
+- Logistic Regression Models
 
+- Classification Tree Models
+
+- Random Forest Models
+
+We will use logLoss as our metric to evaluate models and do 5 folt cross-validation to slect the best model from each type of model. At the very end, we will compare our best model from each of the Model types and have an overall/final best model.
+
+Let's begin by loading our packages and splitting our data.
+
+```{r setup, message=FALSE, warning=FALSE}
+# Load packages
+library(caret)
+library(dplyr)
+library(glmnet)  
+library(MLmetrics)
+library(rpart)
+library(randomForest)
+
+# Read the data in like we did for EDA
+diabetes_data <- read.csv("diabetes_binary_health_indicators_BRFSS2015.csv")
+
+# Pick response and variables to be investigated and mutate them appropriately
+diabetes_data <- diabetes_data[, c("Diabetes_binary", "BMI", "PhysActivity", "HighBP")] %>%
+    mutate(
+    Diabetes_binary = factor(Diabetes_binary, levels = c(0, 1), labels = c("No", "Yes")),
+    PhysActivity = factor(PhysActivity, levels = c(0, 1), labels = c("No", "Yes")),
+    HighBP = factor(HighBP, levels = c(0, 1), labels = c("No", "Yes"))
+  )
+
+# Split the data
+set.seed(1)
+train_index <- createDataPartition(diabetes_data$Diabetes_binary, p = 0.7, list = FALSE)
+train_df <- diabetes_data[train_index, ]
+test_df  <- diabetes_data[-train_index, ]
+```
 
 ### Logistic Regression Models
 
+Logistic Regression is a statistical model used for binary classification problems (where the outcome is one of two categories). This model predicts the probability that a given observation belongs to a particular class. For our context, we are predicting the probability that a given observation belongs to the following 2 categories:
 
+-Yes: Diabetes
+
+-No: No Diabetes.
+```{r}
+
+
+# 1. Set up trainControl with logLoss
+ctrl <- trainControl(
+  method = "cv",
+  number = 5,
+  classProbs = TRUE,
+  summaryFunction = mnLogLoss
+)
+
+# Candidate Model 1: Only BMI
+set.seed(1) # reset the seed for each model to ensure the same folds
+logmodel1 <- train(
+  Diabetes_binary ~ BMI,
+  data = train_df,
+  method = "glm",
+  family = "binomial",
+  trControl = ctrl,
+  metric = "logLoss"
+)
+
+# Candidate Model 2: BMI + Physical Activity
+set.seed(1)
+logmodel2 <- train(
+  Diabetes_binary ~ BMI + PhysActivity,
+  data = train_df,
+  method = "glm",
+  family = "binomial",
+  trControl = ctrl,
+  metric = "logLoss"
+)
+
+# Candidate Model 3: BMI + Physical Activity + High Blood Pressure
+set.seed(1)
+logmodel3 <- train(
+  Diabetes_binary ~ BMI + PhysActivity + HighBP,
+  data = train_df,
+  method = "glm",
+  family = "binomial",
+  trControl = ctrl,
+  metric = "logLoss"
+)
+
+# Compare models
+logresults <- data.frame(
+  Model = c("BMI Only", "BMI + PhysActivity", "BMI + PhysActivity + HighBP"),
+  LogLoss = c(
+    min(logmodel1$results$logLoss),
+    min(logmodel2$results$logLoss),
+    min(logmodel3$results$logLoss)
+  )
+)
+
+print(logresults)
+```
+*logmodel3* has the smallest logLoss, indicating it is our best logistics regression model.
 
 
 ### Classification Tree
 
+A classification tree is a type of decision tree used for predicting categorical outcomes. In our case, the goal is to predict whether an individual has diabetes (Yes or No) based on characteristics like BMI, physical activity, and blood pressure.
 
+A classification tree works by recursively partitioning the dataset into smaller and smaller groups that are increasingly "pure" — meaning they contain mostly one class (e.g., mostly diabetics or mostly non-diabetics).
+
+```{r}
+# Create grid
+cp_grid <- expand.grid(cp = c(0.00001, 0.0001, 0.000001)) #small cp values are required for any model differences to be present
+
+# Model 1: BMI only
+set.seed(1)
+tree1 <- train(
+  Diabetes_binary ~ BMI,
+  data = train_df,
+  method = "rpart",
+  trControl = ctrl,
+  metric = "logLoss",
+  tuneGrid = cp_grid
+)
+
+# Model 2: BMI + Physical Activity
+set.seed(1)
+tree2 <- train(
+  Diabetes_binary ~ BMI + PhysActivity,
+  data = train_df,
+  method = "rpart",
+  trControl = ctrl,
+  metric = "logLoss",
+  tuneGrid = cp_grid
+)
+
+# Model 3: BMI + Physical Activity + HighBP
+set.seed(1)
+tree3 <- train(
+  Diabetes_binary ~ BMI + PhysActivity + HighBP,
+  data = train_df,
+  method = "rpart",
+  trControl = ctrl,
+  metric = "logLoss",
+  tuneGrid = cp_grid
+)
+
+treeresults <- data.frame(
+  Model = c("BMI Only", "BMI + PhysActivity", "BMI + PhysActivity + HighBP"),
+  LogLoss = c(
+    min(tree1$results$logLoss),
+    min(tree2$results$logLoss),
+    min(tree3$results$logLoss)
+  )
+)
+
+print(treeresults)
+
+```
+Our best classification tree model is tree3 since it has the lowest logLoss. Our logLoss values are similar to the logLoss values from the logistic models!
 
 
 
 ### Random Forest
 
+A random forest is an ensemble machine learning method that builds a collection (or “forest”) of decision trees and combines their predictions to improve performance and reduce overfitting. It is particularly effective for classification tasks like predicting whether an individual has diabetes.
 
+```{r}
+# Model 1: BMI only
+set.seed(1)
+rf1 <- train(
+  Diabetes_binary ~ BMI,
+  data = train_df,
+  method = "rf",
+  trControl = ctrl,
+  metric = "logLoss",
+  tuneGrid = expand.grid(mtry = 1),
+  ntree = 100
+)
+
+# Model 2: BMI + Physical Activity
+set.seed(1)
+rf2 <- train(
+  Diabetes_binary ~ BMI + PhysActivity,
+  data = train_df,
+  method = "rf",
+  trControl = ctrl,
+  metric = "logLoss",
+  tuneGrid = expand.grid(mtry = c(1, 2)),
+  ntree = 100
+)
+
+# Model 3: BMI + Physical Activity + HighBP
+set.seed(1)
+rf3 <- train(
+  Diabetes_binary ~ .,
+  data = train_df,
+  method = "rf",
+  trControl = ctrl,
+  metric = "logLoss",
+  tuneGrid = expand.grid(mtry = c(1, 2, 3)),
+  ntree = 100
+)
+
+# results
+rfresults <- data.frame(
+  Model = c("BMI Only", "BMI + PhysActivity", "BMI + PhysActivity + HighBP"),
+  LogLoss = c(
+    min(rf1$results$logLoss),
+    min(rf2$results$logLoss),
+    min(rf3$results$logLoss)
+  )
+)
+
+print(rfresults)
+```
 
 
 ### Final Model Selection
 
+Now that we have every model fit, lets compare the best models from each on the test data, and pick an overall best model!
+```{r}
+# Use Test data
+probs_lr <- predict(logmodel3, newdata = test_df, type = "prob")[, "Yes"]
+probs_tree <- predict(tree3, newdata = test_df, type = "prob")[, "Yes"]
+probs_rf <- predict(tree2, newdata = test_df, type = "prob")[, "Yes"]
+
+# Calculate logLoss
+actual <- ifelse(test_df$Diabetes_binary == "Yes", 1, 0)
+logloss_lr <- LogLoss(probs_lr, actual)
+logloss_tree <- LogLoss(probs_tree, actual)
+logloss_rf <- LogLoss(probs_rf, actual)
+
+# Compare results
+finalresults <- data.frame(
+  Model = c("Logistic Regression", "Classification Tree", "Random Forest"),
+  LogLoss = c(logloss_lr, logloss_tree, logloss_rf)
+)
+
+print(finalresults)
+```
 
 
